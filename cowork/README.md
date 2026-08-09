@@ -65,12 +65,12 @@ Two options, depending on what you're starting from:
 - **Using the included set as-is:** `../sql/002_seed_ccdv_f_questions.sql` ships with this kit —
   53 practice questions for Anthropic's Claude Certified Developer –
   Foundations exam (`exam_code = 'CCDV-F'`), covering all eight blueprint
-  domains at their official weightings, written by Matthew Purcell and
-  [published here](https://www.linkedin.com/feed/update/urn:li:activity:7484728794990354432/).
-  Run it straight after `../sql/001_create_cert_prep_schema.sql`
-  and you have a working, populated quiz with no writing required. It's
-  idempotent the same way `seed_example.sql` is — safe to re-run, never
-  resets review progress.
+  domains at their official weightings. The set was written by Matthew Purcell
+  and [published here](https://www.linkedin.com/feed/update/urn:li:activity:7484728794990354432/);
+  it is his work, included with attribution. Run it straight after
+  `../sql/001_create_cert_prep_schema.sql` and you have a working, populated quiz
+  with no writing required. It's idempotent the same way `seed_example.sql` is —
+  safe to re-run, never resets review progress.
 
 Each question needs:
 - `exam_code` — a short label for which quiz/subject this belongs to, so one
@@ -137,6 +137,15 @@ they're arbitrary starting points, not a validated formula.
   set up but means correctness depends on the task prompt being followed
   precisely — worth spot-checking `cert_attempts` occasionally against what
   you actually answered.
+
+## Adding more question sets
+
+Got another exam's practice PDF you want in the same format? `../prompts/pdf_to_sql_prompt.md`
+is a self-contained prompt — paste it into a fresh chat with that PDF attached,
+and it walks Claude through producing a compatible `.sql` file: same schema,
+same dollar-quoting conventions, same idempotent `ON CONFLICT` pattern, its own
+`exam_code`. Run the result against your existing database and it adds
+alongside whatever's already there without touching it.
 
 ## Extending this
 
