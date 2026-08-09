@@ -9,6 +9,17 @@
 -- state columns (times_asked, next_due_at, interval_days, ease_factor) on rows that already exist,
 -- so you can safely fix a typo here and re-run without losing review progress.
 -- Requires 001_create_cert_prep_schema.sql to have been applied first.
+--
+-- KNOWN ERRATUM IN THE SOURCE PDF — question 5.9.
+-- The PDF's answer key reads "5.9 — Correct: A, D", which contradicts the question itself:
+-- 5.9 is stated as "Multiple choice · select ONE" with four options, and the key's own rationale
+-- describes fast mode, which is option C. The correct answer is C, as recorded below.
+-- Matthew Purcell has confirmed this — the answer key line is the error, not the question.
+-- Do not "correct" this row back to A,D if regenerating the seed from the PDF.
+--
+-- Verified against the source PDF on 2026-08-09: all 53 question texts and all 220 answer options
+-- match the PDF verbatim; question count, per-domain distribution, formats and select counts match
+-- the stated blueprint; the answer key agrees on all questions except 5.9 above.
 
 insert into public.cert_questions
 (exam_code, domain_number, domain_name, domain_weight, question_number, format, select_count, question_text, options, correct_answers, rationale)
