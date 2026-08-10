@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jukipuki/cert-prepare-helper/specs/001-static-quiz/contracts/questions.schema.json",
+  "title": "Generated question set",
+  "description": "Shape of web/src/content/questions.generated.json, produced from sql/002_seed_ccdv_f_questions.sql. Mirrored by the Zod schema in web/src/content/schema.ts, which both the generator and the loader use.",
+  "type": "object",
+  "required": ["_generated", "examCode", "questions"],
+  "additionalProperties": false,
+  "properties": {
+    "_generated": {
+      "type": "object",
+      "description": "Provenance banner. Its presence is what marks this file as machine-produced.",
+      "required": ["source", "command", "warning"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "const": "sql/002_seed_ccdv_f_questions.sql"
+        },
+        "command": {
+          "const": "npm run generate:questions"
+        },
+        "warning": {
+          "const": "GENERATED FILE — DO NOT EDIT. Edit the source seed migration and regenerate."
+        }
+      }
+    },
+    "examCode": {
+      "type": "string",
+      "minLength": 1,
+      "examples": ["CCDV-F"]
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/question" }
+    }
+  },
+  "$defs": {
+    "optionKey": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D", "E"]
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "questionNumber",
+        "domainNumber",
+        "domainName",
+        "domainWeight",
+        "format",
+        "selectCount",
+        "questionText",
+        "options",
+        "correctAnswers",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "questionNumber": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Source numbering, unique across the set. Used for display and traceability, never for navigation.",
+          "examples": ["1.1", "2.14"]
+        },
+        "domainNumber": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "domainName": { "type": "string", "minLength": 1 },
+        "domainWeight": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 },
+        "format": {
+          "type": "string",
+          "enum": ["multiple_choice", "multiple_response"]
+        },
+        "selectCount": { "type": "integer", "minimum": 1 },
+        "questionText": { "type": "string", "minLength": 1 },
+        "options": {
+          "type": "object",
+          "minProperties": 2,
+          "propertyNames": { "$ref": "#/$defs/optionKey" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "correctAnswers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/optionKey" },
+          "description": "Stored sorted, so generation is reproducible and grading is order-independent."
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "format": { "const": "multiple_choice" } } },
+          "then": { "properties": { "selectCount": { "const": 1 } } }
+        },
+        {
+          "if": { "properties": { "format": { "const": "multiple_response" } } },
+          "then": { "properties": { "selectCount": { "minimum": 2 } } }
+        }
+      ]
+    }
+  },
+  "$comment": "Two invariants cannot be expressed in JSON Schema and are enforced by the generator instead, failing the build on violation: (1) selectCount === correctAnswers.length; (2) every key in correctAnswers exists in options. Both are asserted in the generator's test suite against the real seed."
+}
