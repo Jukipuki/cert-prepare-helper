@@ -2,7 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-08-09
-**Last Updated**: 2026-08-09 (revalidated after mode selection and static-content revisions)
+**Last Updated**: 2026-08-10 (revalidated after the clarification session)
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -44,10 +44,12 @@
 - "Static content, swappable for a database later" is expressed behaviourally in FR-005 and FR-006
   rather than as a storage choice, keeping the spec technology-agnostic. Where the substitution
   boundary sits is a `/speckit-plan` decision.
-- Constitution alignment checked at spec time: FR-007/FR-009 satisfy the Data Integrity constraints
-  (no writes, existing study-progress state untouched), FR-012/FR-014/FR-033/FR-034 satisfy
-  Principle III (UX consistency and accessibility), and SC-003/SC-004/SC-006 encode Principle IV
-  budgets in user-facing terms.
+- Constitution alignment checked at spec time: FR-007 (no writes) and FR-009 (nothing recorded)
+  satisfy the Data Integrity constraints; FR-014 (select count stated), FR-016 (never colour
+  alone), FR-040 (loading/empty/error states) and FR-041 (keyboard operability) satisfy
+  Principle III; and SC-003/SC-004/SC-006 encode Principle IV budgets in user-facing terms.
+  Requirement ids are paired with a short description here because clarification sessions renumber
+  them — if an id and its description ever disagree, trust the description.
 
 ### Governance item — resolved
 

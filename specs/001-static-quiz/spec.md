@@ -4,11 +4,32 @@
 
 **Created**: 2026-08-09
 
-**Last Updated**: 2026-08-09
+**Last Updated**: 2026-08-10
 
 **Status**: Draft
 
 **Input**: User description: "Read the handover-cert-preparation-quiz.md we will be building Use case 1 — static quiz, no persistence." Refined: two selectable modes — zen (untimed, result and rationale after each question) and exam (120-minute timer, results published at the end when all questions are answered or time runs out). Question content ships as a static resource in this release, with the content source designed to be swappable for a database later.
+
+## Clarifications
+
+### Session 2026-08-10
+
+- Q: In exam mode, how should a candidate move between the 53 questions and see which ones they've
+  answered? → A: Previous/Next controls plus a question grid (numbered 1–53) showing answered,
+  unanswered and incomplete status, allowing a direct jump to any question.
+- Q: In zen mode, can the candidate step back to a question they've already answered to re-read its
+  explanation? → A: Yes — Previous/Next in both directions. Revisiting a graded question shows it
+  with its selection locked, its explanation visible, and the score unchanged.
+- Q: Would backward navigation still work if questions were later presented in a random order?
+  → A: Yes. Session order is fixed once at session start, and all navigation and position
+  indicators address a question by its place in that session order rather than by its number in
+  the source set, so randomising the order later changes nothing about navigation.
+- Q: If the candidate hits refresh or closes the tab during a session, should the browser ask them
+  to confirm before the session is destroyed? → A: Exam mode only. An exam session in progress
+  prompts for confirmation before the page reloads or closes; zen sessions close silently.
+- Q: Should the deployed quiz collect anything at all about how it's used — usage analytics or
+  crash/error reporting? → A: Nothing. No analytics, no error reporting, no third-party scripts of
+  any kind.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -59,7 +80,12 @@ summary.
 10. **Given** a zen session is in progress, **When** any question is displayed, **Then** the
     candidate's position in the set and running count of correct answers are visible without extra
     interaction.
-11. **Given** the final question has been graded, **When** the candidate advances, **Then** the
+11. **Given** several questions have been graded, **When** the candidate steps back to an earlier
+    one, **Then** it is shown with their original selection, the correct answer(s), and the
+    explanation, with the selection locked and the running score unchanged.
+12. **Given** the candidate has stepped back to an earlier question, **When** they step forward
+    again, **Then** they return to the furthest question they had reached, with its state intact.
+13. **Given** the final question has been graded, **When** the candidate advances, **Then** the
     session results are shown with total correct, percentage, and a per-domain breakdown.
 
 ---
@@ -93,26 +119,34 @@ full results appear. Separately, let a shortened clock expire and confirm automa
    to any question in the set in any order, forward or backward.
 4. **Given** a question the candidate has already answered, **When** they return to it before
    submitting, **Then** their previous selection is shown and can be changed.
-5. **Given** an exam session is in progress, **When** the candidate reviews their overall progress,
-   **Then** they can see which questions are answered, which are unanswered, and which have an
-   incomplete selection.
-6. **Given** 10 minutes or less remain, **When** the countdown is displayed, **Then** the remaining
+5. **Given** an exam session is in progress, **When** the candidate opens the question grid, **Then**
+   every question in the set is listed by number and marked as answered, unanswered, or
+   incompletely answered.
+6. **Given** the question grid is open, **When** the candidate selects any question from it, **Then**
+   that question is displayed with any selection they had already made.
+7. **Given** the candidate answers or clears a question, **When** they look at the question grid,
+   **Then** that question's status already reflects the change without a refresh.
+8. **Given** 10 minutes or less remain, **When** the countdown is displayed, **Then** the remaining
    time is visually emphasised beyond its normal presentation.
-7. **Given** questions remain unanswered or incompletely answered, **When** the candidate chooses to
+9. **Given** questions remain unanswered or incompletely answered, **When** the candidate chooses to
    submit, **Then** they are told how many are affected and must confirm before the session is
    graded.
-8. **Given** the candidate confirms submission, **When** grading completes, **Then** the results are
+10. **Given** the candidate confirms submission, **When** grading completes, **Then** the results are
    published showing total correct, percentage, per-domain breakdown, and the time used.
-9. **Given** an exam session is in progress with unsaved selections, **When** the countdown reaches
+11. **Given** an exam session is in progress with unsaved selections, **When** the countdown reaches
    zero, **Then** the session is submitted automatically, every selection made up to that moment is
    retained, and the results are published without further action from the candidate.
-10. **Given** a submitted or expired exam session, **When** the results are published, **Then**
+12. **Given** a submitted or expired exam session, **When** the results are published, **Then**
     every question is available for review with the candidate's own selection, the correct
     answer(s), and the explanation.
-11. **Given** questions were left unanswered or incomplete at submission, **When** the results are
+13. **Given** questions were left unanswered or incomplete at submission, **When** the results are
     published, **Then** those questions are scored as incorrect and are identified as unanswered
     rather than as wrong choices.
-12. **Given** the candidate switches away to another tab or application, **When** they return,
+14. **Given** an exam session is in progress, **When** the candidate reloads or tries to close the
+    page, **Then** the browser asks them to confirm before the session is discarded.
+15. **Given** an exam session has been submitted or has expired, **When** the candidate reloads or
+    closes the page, **Then** no confirmation prompt appears.
+16. **Given** the candidate switches away to another tab or application, **When** they return,
     **Then** the countdown reflects the real time that elapsed while they were away.
 
 ---
@@ -153,8 +187,12 @@ first question with a zeroed score and a full 120 minutes.
 
 - **Page refresh or tab close mid-session**: all progress is discarded and the quiz returns to the
   mode choice. In exam mode this also forfeits the remaining time — a refresh cannot be recovered
-  from. This is intended behaviour for this feature, and the candidate is warned before any in-app
-  action that would discard a session in progress.
+  from. This is intended behaviour for this feature. The candidate is warned before any in-app
+  action that would discard a session in progress, and during an exam session the browser also asks
+  for confirmation before reloading or closing the page. Zen sessions close without a prompt.
+- **Candidate dismisses the exam reload warning and reloads anyway**: the session is gone, including
+  its remaining time, and the quiz starts again at the mode choice. The warning exists to prevent an
+  accidental loss, not to make the session recoverable.
 - **Two tabs open at once**: each tab runs an entirely independent session with its own mode, score,
   and clock; neither affects the other.
 - **Countdown expires while the candidate is mid-selection**: the session submits with the
@@ -210,69 +248,88 @@ first question with a zeroed score and a full 120 minutes.
 - **FR-008**: The quiz MUST be usable with no account, no sign-in, and no setup step.
 - **FR-009**: The quiz MUST NOT record anything about a candidate's answers, score, timing, or
   progress anywhere outside the open page.
-- **FR-010**: The quiz MUST present all questions in a stable, repeatable order within a session, so
-  that the position indicator and cross-question navigation are meaningful.
+- **FR-010**: The quiz MUST NOT transmit anything about a session to any destination, and MUST NOT
+  load analytics, tracking, or error-reporting scripts of any kind.
+- **FR-011**: The quiz MUST fix the order of the questions once, at the start of a session, and keep
+  that order unchanged for the lifetime of the session.
+- **FR-012**: Position indicators and every form of navigation MUST address a question by its place
+  in the session's own order, never by its number in the source question set, so that the order can
+  later be randomised without altering navigation behaviour.
 
 ### Question Presentation and Grading (both modes)
 
-- **FR-011**: The quiz MUST present each question with its full text, all answer options, its exam
+- **FR-013**: The quiz MUST present each question with its full text, all answer options, its exam
   domain, and its position within the set.
-- **FR-012**: For questions requiring more than one answer, the quiz MUST state the required number
+- **FR-014**: For questions requiring more than one answer, the quiz MUST state the required number
   of selections before the candidate answers.
-- **FR-013**: The quiz MUST grade a submission as correct only when the selected answers exactly
+- **FR-015**: The quiz MUST grade a submission as correct only when the selected answers exactly
   match the recorded correct answers, irrespective of selection order.
-- **FR-014**: The quiz MUST convey correct, incorrect, and unanswered through text or symbol as well
+- **FR-016**: The quiz MUST convey correct, incorrect, and unanswered through text or symbol as well
   as colour, never through colour alone.
 
 ### Zen Mode
 
-- **FR-015**: Zen mode MUST refuse a submission when the number of selections does not match the
+- **FR-017**: Zen mode MUST refuse a submission when the number of selections does not match the
   number required, and MUST tell the candidate what is required.
-- **FR-016**: Zen mode MUST show, immediately on submission, whether the answer was correct, which
+- **FR-018**: Zen mode MUST show, immediately on submission, whether the answer was correct, which
   option(s) were correct, and the recorded explanation.
-- **FR-017**: Zen mode MUST lock a question's selection once graded, so the recorded result cannot
+- **FR-019**: Zen mode MUST lock a question's selection once graded, so the recorded result cannot
   be altered.
-- **FR-018**: Zen mode MUST display the candidate's position in the set and running number of
+- **FR-020**: Zen mode MUST display the candidate's position in the set and running number of
   correct answers throughout the session.
-- **FR-019**: Zen mode MUST NOT display any countdown, deadline, or time limit.
+- **FR-021**: Zen mode MUST NOT display any countdown, deadline, or time limit.
+- **FR-022**: Zen mode MUST allow the candidate to step backward and forward through the questions
+  already presented in the session.
+- **FR-023**: When the candidate returns to a question already graded in zen mode, the quiz MUST
+  show that question with the candidate's original selection, the correct answer(s), and the
+  explanation, with the selection still locked and the running score unchanged.
+- **FR-024**: Zen mode MUST NOT interrupt the candidate with a browser confirmation prompt when the
+  page is reloaded or closed; a zen session ends silently.
 
 ### Exam Mode
 
-- **FR-020**: Exam mode MUST begin a 120-minute countdown when the first question is presented, MUST
+- **FR-025**: Exam mode MUST begin a 120-minute countdown when the first question is presented, MUST
   keep the remaining time visible throughout the session, and MUST NOT offer a pause.
-- **FR-021**: Exam mode MUST measure remaining time against real elapsed time, including while the
+- **FR-026**: Exam mode MUST measure remaining time against real elapsed time, including while the
   page is backgrounded or the device is asleep.
-- **FR-022**: Exam mode MUST visually emphasise the remaining time once 10 minutes or less remain.
-- **FR-023**: Exam mode MUST NOT reveal correctness, correct answers, or explanations for any
+- **FR-027**: Exam mode MUST visually emphasise the remaining time once 10 minutes or less remain.
+- **FR-028**: Exam mode MUST NOT reveal correctness, correct answers, or explanations for any
   question before the session has been submitted or has expired.
-- **FR-024**: Exam mode MUST allow the candidate to move to any question in the set in any order, to
-  leave questions unanswered, and to change any answer at any time before submission.
-- **FR-025**: Exam mode MUST show which questions are answered, unanswered, and incompletely
-  answered while the session is in progress.
-- **FR-026**: Exam mode MUST allow the candidate to submit at any time, and MUST warn and require
+- **FR-029**: Exam mode MUST allow the candidate to move to any question in the set in any order —
+  both by stepping forward and backward through the set and by jumping directly to a chosen
+  question — to leave questions unanswered, and to change any answer at any time before submission.
+- **FR-030**: Exam mode MUST provide a question grid listing every question in the set by its
+  number, marking each as answered, unanswered, or incompletely answered, and MUST allow the
+  candidate to jump straight to any question from it.
+- **FR-031**: The exam-mode question grid MUST reflect an answer's status immediately when it
+  changes, without the candidate having to leave or refresh the current question.
+- **FR-032**: Exam mode MUST allow the candidate to submit at any time, and MUST warn and require
   confirmation when any question is unanswered or incompletely answered.
-- **FR-027**: Exam mode MUST submit automatically the moment the countdown reaches zero, retaining
+- **FR-033**: Exam mode MUST submit automatically the moment the countdown reaches zero, retaining
   every selection made up to that point, without requiring any action from the candidate.
-- **FR-028**: Exam mode MUST score unanswered and incompletely answered questions as incorrect and
+- **FR-034**: Exam mode MUST score unanswered and incompletely answered questions as incorrect and
   MUST identify them in the results as unanswered rather than as wrong choices.
+- **FR-035**: While an exam session is in progress, the quiz MUST ask the candidate to confirm
+  before the browser reloads or leaves the page, so that a refresh or a closed tab cannot silently
+  destroy the session. The prompt MUST NOT appear once the session has been submitted or expired.
 
 ### Results and Review
 
-- **FR-029**: At the end of a session in either mode, the quiz MUST present the total correct, total
+- **FR-036**: At the end of a session in either mode, the quiz MUST present the total correct, total
   questions, overall percentage, and a per-domain breakdown of correct versus asked; for exam
   sessions it MUST also present the time used.
-- **FR-030**: After a session in either mode, the quiz MUST allow the candidate to review every
+- **FR-037**: After a session in either mode, the quiz MUST allow the candidate to review every
   question with their own selection, the correct answer(s), the explanation, and the result.
-- **FR-031**: The review MUST allow the candidate to narrow the list to questions answered
+- **FR-038**: The review MUST allow the candidate to narrow the list to questions answered
   incorrectly or left unanswered.
-- **FR-032**: The quiz MUST allow the candidate to start over at any point, returning to the mode
+- **FR-039**: The quiz MUST allow the candidate to start over at any point, returning to the mode
   choice with the score cleared and no previous answers retained.
 
 ### Interface States and Access
 
-- **FR-033**: The quiz MUST present a distinct loading state, empty state, and error state for the
+- **FR-040**: The quiz MUST present a distinct loading state, empty state, and error state for the
   question set, and MUST offer a retry from the error state.
-- **FR-034**: Every quiz interaction — choosing a mode, selecting, submitting, navigating,
+- **FR-041**: Every quiz interaction — choosing a mode, selecting, submitting, navigating,
   reviewing, restarting — MUST be completable using the keyboard alone, with the focused element
   visibly indicated.
 
@@ -332,6 +389,8 @@ first question with a zeroed score and a full 120 minutes.
   under 10 seconds.
 - **SC-014**: No candidate answer, score, timing, or progress data from a session is retrievable
   after the page is refreshed or closed.
+- **SC-015**: Across a complete session, zero network requests carry answer, score, timing, or
+  progress data, and zero requests are made to any third-party destination.
 
 ## Assumptions
 
@@ -362,6 +421,10 @@ first question with a zeroed score and a full 120 minutes.
   typical phone widths as well as on a laptop.
 - Anyone who can reach the quiz can use it. There is no per-candidate identity, so there is nothing
   to protect at the candidate level in this feature.
+- The deployed quiz collects nothing: no usage analytics, no crash or error reporting, no
+  third-party scripts. Production problems surface by being reported rather than by telemetry,
+  which is an accepted trade for a tool with no accounts and no stored data. Adding any of this
+  later would require revisiting FR-010, SC-015, and this assumption together.
 - Because content ships statically and nothing is written back, this feature requires no credential
   of any kind, and the existing per-question study-progress columns and attempt log are untouched.
 - The hourly practice routine that currently reads and updates the existing question records keeps
