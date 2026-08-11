@@ -13,8 +13,8 @@ import { SessionReview } from '@/components/results/SessionReview';
 import { StartOverControl } from '@/components/quiz/StartOverControl';
 import { ChangeExamControl } from '@/components/quiz/ChangeExamControl';
 
-export function ZenSession({ set }: { set: QuestionSet }) {
-  const [session, dispatch] = useSession('zen', set);
+export function ZenSession({ set, shuffle = false }: { set: QuestionSet; shuffle?: boolean }) {
+  const [session, dispatch] = useSession('zen', set, shuffle);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
 
   if (session.status === 'submitted') {

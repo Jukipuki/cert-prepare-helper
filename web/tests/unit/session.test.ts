@@ -7,6 +7,15 @@ import {
 } from '@/domain/session';
 import type { Question, QuestionSet } from '@/domain/types';
 
+function deterministicRandom(sequence: number[]): () => number {
+  let i = 0;
+  return () => {
+    const value = sequence[i % sequence.length];
+    i += 1;
+    return value ?? 0;
+  };
+}
+
 function makeQuestion(overrides: Partial<Question>): Question {
   return {
     questionNumber: '1.1',
@@ -36,6 +45,17 @@ const set: QuestionSet = { examCode: 'CCDV-F', questions: [q1, q2, q3] };
 describe('buildOrder', () => {
   it('returns question numbers in set order (identity today)', () => {
     expect(buildOrder(set)).toEqual(['1.1', '1.2', '1.3']);
+  });
+
+  it('returns question numbers in set order when shuffle is false', () => {
+    expect(buildOrder(set, false)).toEqual(['1.1', '1.2', '1.3']);
+  });
+
+  it('returns a permuted order when shuffle is true, given a non-identity random source', () => {
+    // Always picks the last remaining element from the shrinking pool, reversing the input.
+    const random = deterministicRandom([0.999]);
+    expect(buildOrder(set, true, random)).not.toEqual(['1.1', '1.2', '1.3']);
+    expect(buildOrder(set, true, random).slice().sort()).toEqual(['1.1', '1.2', '1.3']);
   });
 });
 
@@ -72,6 +92,31 @@ describe('choosing -> inProgress', () => {
     });
     const again = sessionReducer(started, { type: 'CHOOSE_MODE', mode: 'exam', set, now: 2000 });
     expect(again).toBe(started);
+  });
+
+  it('shuffles the order for zen when shuffle is requested with a non-identity random source', () => {
+    const state = sessionReducer(createInitialSession(), {
+      type: 'CHOOSE_MODE',
+      mode: 'zen',
+      set,
+      now: 1000,
+      shuffle: true,
+      random: deterministicRandom([0.999]),
+    });
+    expect(state.order).not.toEqual(['1.1', '1.2', '1.3']);
+    expect(state.order.slice().sort()).toEqual(['1.1', '1.2', '1.3']);
+  });
+
+  it('ignores shuffle for exam mode, keeping source order', () => {
+    const state = sessionReducer(createInitialSession(), {
+      type: 'CHOOSE_MODE',
+      mode: 'exam',
+      set,
+      now: 1000,
+      shuffle: true,
+      random: deterministicRandom([0, 0]),
+    });
+    expect(state.order).toEqual(['1.1', '1.2', '1.3']);
   });
 });
 

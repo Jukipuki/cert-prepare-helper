@@ -15,6 +15,7 @@ export function QuizSessionHost({ source = bundledQuestionSource }: { source?: Q
   const searchParams = useSearchParams();
   const mode: Mode = searchParams.get('mode') === 'exam' ? 'exam' : 'zen';
   const examCode = searchParams.get('exam');
+  const shuffle = searchParams.get('shuffle') === '1';
 
   const state = useAsyncContent<QuestionSet>(() => {
     if (!examCode) {
@@ -35,12 +36,12 @@ export function QuizSessionHost({ source = bundledQuestionSource }: { source?: Q
     return <EmptyState />;
   }
 
-  return <QuizSession mode={mode} set={state.data} />;
+  return <QuizSession mode={mode} set={state.data} shuffle={shuffle} />;
 }
 
-function QuizSession({ mode, set }: { mode: Mode; set: QuestionSet }) {
+function QuizSession({ mode, set, shuffle }: { mode: Mode; set: QuestionSet; shuffle: boolean }) {
   if (mode === 'zen') {
-    return <ZenSession set={set} />;
+    return <ZenSession set={set} shuffle={shuffle} />;
   }
 
   return <ExamSession set={set} />;

@@ -4,16 +4,21 @@ import Link from 'next/link';
 import type { QuestionSource } from '@/content/questionSource';
 import { bundledQuestionSource } from '@/content/bundledQuestionSource';
 import { useAsyncContent } from '@/hooks/useAsyncContent';
+import { useShufflePreference } from '@/hooks/useShufflePreference';
+import type { ShufflePreferenceStore } from '@/preferences/shufflePreferenceStore';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
 
 export function ModeChoiceHost({
   examCode,
   source = bundledQuestionSource,
+  shufflePreferenceStore,
 }: {
   examCode: string;
   source?: QuestionSource;
+  shufflePreferenceStore?: ShufflePreferenceStore;
 }) {
+  const [shuffle, setShuffle] = useShufflePreference(shufflePreferenceStore);
   const state = useAsyncContent(() => source.listExams(), 'Failed to load this exam.');
 
   if (state.status === 'loading') {
@@ -41,16 +46,27 @@ export function ModeChoiceHost({
       </div>
 
       <div className="grid w-full gap-4 sm:grid-cols-2">
-        <Link
-          href={`/quiz?exam=${encodeURIComponent(exam.examCode)}&mode=zen`}
-          className="flex flex-col gap-2 rounded-xl border border-line p-6 text-left transition-colors hover:border-accent hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        >
-          <span className="text-lg font-semibold">Zen mode</span>
-          <span className="text-sm text-muted">
-            Untimed. See the correct answer and explanation right after each question. Step back to
-            review earlier questions any time.
-          </span>
-        </Link>
+        <div className="flex flex-col gap-3 rounded-xl border border-line p-6 text-left">
+          <Link
+            href={`/quiz?exam=${encodeURIComponent(exam.examCode)}&mode=zen${shuffle ? '&shuffle=1' : ''}`}
+            className="flex flex-col gap-2 transition-colors hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <span className="text-lg font-semibold">Zen mode</span>
+            <span className="text-sm text-muted">
+              Untimed. See the correct answer and explanation right after each question. Step back
+              to review earlier questions any time.
+            </span>
+          </Link>
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input
+              type="checkbox"
+              checked={shuffle}
+              onChange={(e) => setShuffle(e.target.checked)}
+              className="h-4 w-4 rounded border-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            />
+            Shuffle question order
+          </label>
+        </div>
 
         <Link
           href={`/quiz?exam=${encodeURIComponent(exam.examCode)}&mode=exam`}

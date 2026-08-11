@@ -1,11 +1,15 @@
 import { test, expect, type Page } from '@playwright/test';
 
 async function answerCurrentQuestion(page: Page) {
+  // Scoped to the question card (<article>): a screen reached via client-side navigation can
+  // still have its own inputs in the DOM during the transition (e.g. the mode-choice screen's
+  // shuffle checkbox), and an unscoped selector could match those instead of the real question's.
+  const questionCard = page.locator('article');
   // .count() does not auto-wait like other Playwright assertions, so wait for at least one option
   // input to be attached before branching on radio vs. checkbox counts.
-  await page.locator('input[type="radio"], input[type="checkbox"]').first().waitFor();
+  await questionCard.locator('input[type="radio"], input[type="checkbox"]').first().waitFor();
 
-  const radios = page.getByRole('radio');
+  const radios = questionCard.getByRole('radio');
   if ((await radios.count()) > 0) {
     await radios.first().check();
     return;
@@ -14,7 +18,7 @@ async function answerCurrentQuestion(page: Page) {
   const hint = await page.getByText(/select \d+/i).textContent();
   const match = hint?.match(/\d+/);
   const required = match ? Number(match[0]) : 1;
-  const checkboxes = page.getByRole('checkbox');
+  const checkboxes = questionCard.getByRole('checkbox');
   for (let i = 0; i < required; i += 1) {
     await checkboxes.nth(i).check();
   }

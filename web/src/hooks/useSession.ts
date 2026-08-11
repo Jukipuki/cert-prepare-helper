@@ -10,12 +10,17 @@ import type { Mode, QuestionSet, Session } from '@/domain/types';
  * runs synchronously in the lazy initializer, so the session starts `inProgress` on first render —
  * no transient "choosing" render and no dispatch-in-effect.
  */
-export function useSession(mode: Mode, set: QuestionSet): [Session, Dispatch<SessionAction>] {
-  return useReducer(sessionReducer, { mode, set }, (init) =>
+export function useSession(
+  mode: Mode,
+  set: QuestionSet,
+  shuffle = false,
+): [Session, Dispatch<SessionAction>] {
+  return useReducer(sessionReducer, { mode, set, shuffle }, (init) =>
     sessionReducer(createInitialSession(), {
       type: 'CHOOSE_MODE',
       mode: init.mode,
       set: init.set,
+      shuffle: init.shuffle,
       now: Date.now(),
     }),
   );

@@ -1,11 +1,17 @@
 import { grade, isComplete } from '@/domain/grading';
+import { shuffleOrder } from '@/domain/shuffle';
 import type { Mode, OptionKey, Question, QuestionSet, Response, Session } from '@/domain/types';
 
 export const EXAM_DURATION_MS = 120 * 60_000;
 
-/** Presentation order. Identity today; the single place a shuffle would later be introduced. */
-export function buildOrder(set: QuestionSet): string[] {
-  return set.questions.map((q) => q.questionNumber);
+/** Presentation order — source order, or a random permutation of it when `shuffle` is true. */
+export function buildOrder(
+  set: QuestionSet,
+  shuffle = false,
+  random: () => number = Math.random,
+): string[] {
+  const order = set.questions.map((q) => q.questionNumber);
+  return shuffle ? shuffleOrder(order, random) : order;
 }
 
 export function createInitialSession(): Session {
@@ -22,7 +28,14 @@ export function createInitialSession(): Session {
 }
 
 export type SessionAction =
-  | { type: 'CHOOSE_MODE'; mode: Mode; set: QuestionSet; now: number }
+  | {
+      type: 'CHOOSE_MODE';
+      mode: Mode;
+      set: QuestionSet;
+      now: number;
+      shuffle?: boolean;
+      random?: () => number;
+    }
   | { type: 'SELECT'; question: Question; selected: OptionKey[] }
   | { type: 'GRADE_ZEN'; question: Question; now: number }
   | { type: 'STEP_BACK' }
@@ -75,7 +88,7 @@ export function sessionReducer(state: Session, action: SessionAction): Session {
       if (state.status !== 'choosing') return state;
       return {
         mode: action.mode,
-        order: buildOrder(action.set),
+        order: buildOrder(action.set, action.mode === 'zen' && !!action.shuffle, action.random),
         currentIndex: 0,
         furthestIndex: 0,
         responses: new Map(),

@@ -2,11 +2,13 @@
 
 A client-side practice quiz covering multiple certification exams (CCDV-F, CCAR-F, CCAR-Fv2 today;
 CCAR-P once its scenario-matching format ships), offering an untimed **zen** mode (explanation shown
-immediately after each question) and a 120-minute timed **exam** mode (disclosure deferred to
-submission). A candidate first chooses an exam, then a mode. Nothing is stored and nothing is
-transmitted: no account, no `localStorage`, no cookies, no server state. See `specs/001-static-quiz/`
-and `specs/002-multi-exam-support/` at the repository root for the full spec, plan and task
-breakdown.
+immediately after each question, with an optional shuffled question order) and a 120-minute timed
+**exam** mode (disclosure deferred to submission, always in fixed order). A candidate first chooses
+an exam, then a mode. Nothing is stored and nothing is transmitted, with one narrow exception: a
+single boolean "shuffle zen questions" preference lives in `localStorage`, containing no answer,
+score, or timing data. Otherwise: no account, no cookies, no server state. See
+`specs/001-static-quiz/`, `specs/002-multi-exam-support/`, and `specs/003-shuffle-zen-questions/` at
+the repository root for the full spec, plan and task breakdown.
 
 ## Local setup
 
