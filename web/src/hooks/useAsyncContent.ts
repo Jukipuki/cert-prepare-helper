@@ -4,9 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { QuestionSourceError } from '@/content/questionSource';
 
 export type AsyncContentState<T> =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; data: T };
+  { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: T };
 
 /**
  * The loading/error/retry state machine every async content screen needs (FR-040/Principle III),

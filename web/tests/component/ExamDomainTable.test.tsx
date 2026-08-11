@@ -5,7 +5,12 @@ import type { ExamDomainSummary } from '@/domain/types';
 
 const domains: ExamDomainSummary[] = [
   { domainNumber: 1, domainName: 'Agents and Workflows', domainWeight: 14.7, questionCount: 8 },
-  { domainNumber: 2, domainName: 'Applications and Integration', domainWeight: 33.1, questionCount: 17 },
+  {
+    domainNumber: 2,
+    domainName: 'Applications and Integration',
+    domainWeight: 33.1,
+    questionCount: 17,
+  },
 ];
 
 describe('ExamDomainTable', () => {

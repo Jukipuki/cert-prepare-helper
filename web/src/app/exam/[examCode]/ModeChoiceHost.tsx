@@ -27,9 +27,7 @@ export function ModeChoiceHost({
   const exam = state.data.find((candidate) => candidate.examCode === examCode);
 
   if (!exam) {
-    return (
-      <ErrorState message={`"${examCode}" is not a configured exam.`} onRetry={state.retry} />
-    );
+    return <ErrorState message={`"${examCode}" is not a configured exam.`} onRetry={state.retry} />;
   }
 
   return (

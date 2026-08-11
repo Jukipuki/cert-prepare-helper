@@ -2,8 +2,18 @@ import { test, expect } from '@playwright/test';
 
 const EXAMS: { code: string; name: string; totalQuestions: number; domain: string }[] = [
   { code: 'CCDV-F', name: 'CCDV-F', totalQuestions: 53, domain: 'Agents and Workflows' },
-  { code: 'CCAR-F', name: 'CCAR-F', totalQuestions: 60, domain: 'Agentic Architecture & Orchestration' },
-  { code: 'CCAR-Fv2', name: 'CCAR-Fv2', totalQuestions: 60, domain: 'Agentic Architecture & Orchestration' },
+  {
+    code: 'CCAR-F',
+    name: 'CCAR-F',
+    totalQuestions: 60,
+    domain: 'Agentic Architecture & Orchestration',
+  },
+  {
+    code: 'CCAR-Fv2',
+    name: 'CCAR-Fv2',
+    totalQuestions: 60,
+    domain: 'Agentic Architecture & Orchestration',
+  },
 ];
 
 test.describe('exam selection — V1', () => {
@@ -16,7 +26,9 @@ test.describe('exam selection — V1', () => {
       const card = page.getByTestId(`exam-card-${exam.code}`);
       await expect(card.getByRole('link', { name: exam.name, exact: true })).toBeVisible();
       // Scope the count assertion to this exam's own card — CCAR-F and CCAR-Fv2 share a count.
-      await expect(card.getByText(`${exam.totalQuestions} questions`, { exact: true })).toBeVisible();
+      await expect(
+        card.getByText(`${exam.totalQuestions} questions`, { exact: true }),
+      ).toBeVisible();
     }
     // Domain breakdown is visible for at least the first exam without any further interaction.
     await expect(page.getByText('Agents and Workflows')).toBeVisible();

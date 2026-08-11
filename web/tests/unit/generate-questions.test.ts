@@ -36,7 +36,8 @@ function examCounts(exams: GeneratedFile['exams'], examCode: string) {
   const exam = exams.find((e) => e.examCode === examCode);
   if (!exam) throw new Error(`exam ${examCode} not found in generated data`);
   const byDomain = new Map<number, number>();
-  for (const q of exam.questions) byDomain.set(q.domainNumber, (byDomain.get(q.domainNumber) ?? 0) + 1);
+  for (const q of exam.questions)
+    byDomain.set(q.domainNumber, (byDomain.get(q.domainNumber) ?? 0) + 1);
   const weightByDomain = new Map<number, number>();
   for (const q of exam.questions) weightByDomain.set(q.domainNumber, q.domainWeight);
   return {

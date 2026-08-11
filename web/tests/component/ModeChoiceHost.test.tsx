@@ -34,7 +34,9 @@ describe('ModeChoiceHost', () => {
     const source = fakeSource();
     render(<ModeChoiceHost examCode="CCDV-F" source={source} />);
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'CCDV-F' })).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'CCDV-F' })).toBeInTheDocument(),
+    );
     expect(screen.getByRole('link', { name: /zen mode/i })).toHaveAttribute(
       'href',
       '/quiz?exam=CCDV-F&mode=zen',
