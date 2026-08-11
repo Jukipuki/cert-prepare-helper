@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+/* Switches `dark:` utilities to respond to a `.dark` class on <html> (set by next-themes) instead
+   of only `prefers-color-scheme`, so the manual light/dark toggle actually has something to flip. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* GitHub Dark/Light palette, as runtime-switchable tokens rather than hex codes scattered across
+   components. `.dark` (set by next-themes on <html>) overrides the :root (light) values. */
+:root {
+  --canvas: #ffffff;
+  --surface: #f6f8fa;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --line: #d0d7de;
+  --accent: #0969da;
+  --accent-fg: #ffffff;
+  --success: #1a7f37;
+  --danger: #cf222e;
+  --warning: #9a6700;
+}
+
+.dark {
+  --canvas: #0d1117;
+  --surface: #161b22;
+  --fg: #c9d1d9;
+  --muted: #8b949e;
+  --line: #30363d;
+  --accent: #58a6ff;
+  --accent-fg: #0d1117;
+  --success: #3fb950;
+  --danger: #f85149;
+  --warning: #d29922;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}

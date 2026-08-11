@@ -1,0 +1,62 @@
+export type OptionKey = 'A' | 'B' | 'C' | 'D' | 'E';
+
+export type QuestionFormat = 'multiple_choice' | 'multiple_response';
+
+export interface Question {
+  questionNumber: string;
+  domainNumber: number;
+  domainName: string;
+  domainWeight: number;
+  format: QuestionFormat;
+  selectCount: number;
+  questionText: string;
+  options: Partial<Record<OptionKey, string>>;
+  correctAnswers: OptionKey[];
+  rationale: string;
+}
+
+export interface QuestionSet {
+  examCode: string;
+  questions: Question[];
+}
+
+export type Mode = 'zen' | 'exam';
+
+export type SessionStatus = 'choosing' | 'inProgress' | 'submitted' | 'expired';
+
+export interface Response {
+  questionNumber: string;
+  selected: OptionKey[];
+  isComplete: boolean;
+  isCorrect: boolean | null;
+  gradedAt: number | null;
+}
+
+export interface Session {
+  mode: Mode;
+  order: string[];
+  currentIndex: number;
+  furthestIndex: number;
+  responses: Map<string, Response>;
+  status: SessionStatus;
+  deadline: number | null;
+  submittedAt: number | null;
+}
+
+export interface DomainResult {
+  domainNumber: number;
+  domainName: string;
+  correct: number;
+  asked: number;
+  percentage: number;
+}
+
+export interface Result {
+  totalCorrect: number;
+  totalQuestions: number;
+  percentage: number;
+  timeUsedMs: number | null;
+  byDomain: DomainResult[];
+}
+
+export type QuestionStatus = 'unanswered' | 'incomplete' | 'answered' | 'correct' | 'incorrect';
