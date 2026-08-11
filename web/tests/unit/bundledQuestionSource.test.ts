@@ -15,7 +15,7 @@ describe('bundledQuestionSource', () => {
   it('loads and validates each configured exam from the real bundled content', async () => {
     const { bundledQuestionSource } = await import('@/content/bundledQuestionSource');
 
-    for (const examCode of ['CCDV-F', 'CCAR-F', 'CCAR-Fv2']) {
+    for (const examCode of ['CCDV-F', 'CCAR-F', 'CCAR-Fv2', 'CCAR-P']) {
       const set = await bundledQuestionSource.load(examCode);
       expect(set.examCode).toBe(examCode);
       expect(set.questions.length).toBeGreaterThan(0);
@@ -51,7 +51,7 @@ describe('bundledQuestionSource', () => {
   it('listExams() resolves a summary per configured exam, matching buildCatalog', async () => {
     const { bundledQuestionSource } = await import('@/content/bundledQuestionSource');
     const summaries = await bundledQuestionSource.listExams();
-    expect(summaries.map((s) => s.examCode)).toEqual(['CCDV-F', 'CCAR-F', 'CCAR-Fv2']);
+    expect(summaries.map((s) => s.examCode)).toEqual(['CCDV-F', 'CCAR-F', 'CCAR-Fv2', 'CCAR-P']);
     for (const summary of summaries) {
       expect(summary.totalQuestions).toBeGreaterThan(0);
       expect(summary.domains.length).toBeGreaterThan(0);

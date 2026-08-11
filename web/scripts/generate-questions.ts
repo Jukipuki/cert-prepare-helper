@@ -19,12 +19,12 @@ interface LoadedSource extends SeedSource {
 }
 
 // The known, explicit list FR-009 requires: adding an exam means adding one entry here and
-// regenerating, not changing how any existing exam's content is parsed or validated. CCAR-P joins
-// this list in Story 2, once scenario_matching is supported end to end.
+// regenerating, not changing how any existing exam's content is parsed or validated.
 export const SEED_SOURCES: SeedSource[] = [
   { seedFile: '002_seed_ccdv_f_questions.sql', examCode: 'CCDV-F', examName: 'CCDV-F' },
   { seedFile: '003_seed_ccar_f_questions.sql', examCode: 'CCAR-F', examName: 'CCAR-F' },
   { seedFile: '004_seed_ccar_fv2_questions.sql', examCode: 'CCAR-Fv2', examName: 'CCAR-Fv2' },
+  { seedFile: '005_seed_ccar_p_questions.sql', examCode: 'CCAR-P', examName: 'CCAR-P' },
 ];
 
 // Matches one values-tuple for a given exam code in its seed migration. Generalised across two real
@@ -36,7 +36,7 @@ export const SEED_SOURCES: SeedSource[] = [
 // is tolerated as an optional group before the closing paren.
 function buildRowPattern(examCode: string): RegExp {
   return new RegExp(
-    `\\('${examCode}',\\s*(\\d+),\\s*'([^']+)',\\s*([\\d.]+),\\s*'([\\d.]+)',\\s*'(multiple_choice|multiple_response)',\\s*(\\d+),\\s*` +
+    `\\('${examCode}',\\s*(\\d+),\\s*'([^']+)',\\s*([\\d.]+),\\s*'([\\d.]+)',\\s*'(multiple_choice|multiple_response|scenario_matching)',\\s*(\\d+),\\s*` +
       `\\$q\\$(.*?)\\$q\\$,\\s*` +
       `\\$j\\$(.*?)\\$j\\$(?:::jsonb)?,\\s*` +
       `ARRAY\\[([^\\]]*)\\]::text\\[\\],\\s*` +
@@ -78,11 +78,14 @@ export function parseSeed(sql: string, examCode: string): Question[] {
     ];
 
     const options = JSON.parse(optionsJson) as Record<string, string>;
-    const correctAnswers = correctAnswersRaw
+    const parsedAnswers = correctAnswersRaw
       .split(',')
       .map((entry) => entry.trim().replace(/^'|'$/g, ''))
-      .filter((entry) => entry.length > 0)
-      .sort() as OptionKey[];
+      .filter((entry) => entry.length > 0) as OptionKey[];
+    // scenario_matching's correctAnswers is positional (index i = sub-scenario i), so sorting would
+    // corrupt which letter belongs to which sub-scenario. Only the unordered-set formats are sorted,
+    // for reproducible output and order-independent grading.
+    const correctAnswers = format === 'scenario_matching' ? parsedAnswers : parsedAnswers.sort();
 
     questions.push({
       questionNumber,

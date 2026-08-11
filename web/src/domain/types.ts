@@ -1,6 +1,6 @@
 export type OptionKey = 'A' | 'B' | 'C' | 'D' | 'E';
 
-export type QuestionFormat = 'multiple_choice' | 'multiple_response';
+export type QuestionFormat = 'multiple_choice' | 'multiple_response' | 'scenario_matching';
 
 export interface Question {
   questionNumber: string;
@@ -11,6 +11,10 @@ export interface Question {
   selectCount: number;
   questionText: string;
   options: Partial<Record<OptionKey, string>>;
+  /**
+   * multiple_choice/multiple_response: an unordered set. scenario_matching: POSITIONAL — index i is
+   * the correct classification for sub-scenario i — and may contain duplicates.
+   */
   correctAnswers: OptionKey[];
   rationale: string;
 }

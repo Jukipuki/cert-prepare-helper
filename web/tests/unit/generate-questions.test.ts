@@ -46,6 +46,7 @@ function examCounts(exams: GeneratedFile['exams'], examCode: string) {
     weightSum: Array.from(weightByDomain.values()).reduce((a, b) => a + b, 0),
     multipleChoice: exam.questions.filter((q) => q.format === 'multiple_choice').length,
     multipleResponse: exam.questions.filter((q) => q.format === 'multiple_response').length,
+    scenarioMatching: exam.questions.filter((q) => q.format === 'scenario_matching').length,
   };
 }
 
@@ -58,13 +59,13 @@ describe('generate-questions against the real seed files', () => {
 
   it('produces one exams entry per configured seed source, in list order', () => {
     const file = data as GeneratedFile;
-    expect(file.exams.map((e) => e.examCode)).toEqual(['CCDV-F', 'CCAR-F', 'CCAR-Fv2']);
+    expect(file.exams.map((e) => e.examCode)).toEqual(['CCDV-F', 'CCAR-F', 'CCAR-Fv2', 'CCAR-P']);
   });
 
-  it('parses 173 questions total across the three configured exams', () => {
+  it('parses 236 questions total across the four configured exams', () => {
     const file = data as GeneratedFile;
     const total = file.exams.reduce((sum, e) => sum + e.questions.length, 0);
-    expect(total).toBe(173);
+    expect(total).toBe(236);
   });
 
   it('CCDV-F: 53 questions, 8 domains, 45/8 format split, weights sum to 100.0', () => {
@@ -95,6 +96,27 @@ describe('generate-questions against the real seed files', () => {
     expect(counts.multipleChoice).toBe(49);
     expect(counts.multipleResponse).toBe(11);
     expect(counts.weightSum).toBeCloseTo(100.0, 5);
+  });
+
+  it('CCAR-P: 63 questions, 7 domains, 44/14/5 format split, weights sum to 100.0', () => {
+    const file = data as GeneratedFile;
+    const counts = examCounts(file.exams, 'CCAR-P');
+    expect(counts.total).toBe(63);
+    expect(counts.domainCount).toBe(7);
+    expect(counts.multipleChoice).toBe(44);
+    expect(counts.multipleResponse).toBe(14);
+    expect(counts.scenarioMatching).toBe(5);
+    expect(counts.weightSum).toBeCloseTo(100.0, 5);
+  });
+
+  it('CCAR-P scenario_matching rows retain positional, duplicate-containing correctAnswers', () => {
+    const file = data as GeneratedFile;
+    const ccarP = file.exams.find((e) => e.examCode === 'CCAR-P');
+    const q1_11 = ccarP?.questions.find((q) => q.questionNumber === '1.11');
+    // Real seed data: the same choice ("A") legitimately applies to sub-scenarios 1 and 5 — sorting
+    // would have merged them together and lost which sub-scenario each letter belongs to.
+    expect(q1_11?.correctAnswers).toEqual(['A', 'B', 'C', 'D', 'A']);
+    expect(q1_11?.selectCount).toBe(5);
   });
 
   it('accepts the same questionNumber in two different exams without conflict (FR-008)', () => {

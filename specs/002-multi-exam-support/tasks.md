@@ -176,48 +176,48 @@ review.
 
 ### Tests for User Story 2
 
-- [ ] T032 [P] [US2] Extend `web/tests/unit/grading.test.ts`: positional `scenario_matching` grading
+- [x] T032 [P] [US2] Extend `web/tests/unit/grading.test.ts`: positional `scenario_matching` grading
       — a legitimately repeated choice scored correct, one wrong position scored incorrect and
       identifiable via `gradeSubScenarios`, and a full sweep of the five real CCAR-P
       scenario_matching questions against their recorded `correctAnswers`
-- [ ] T033 [P] [US2] Extend `web/tests/unit/generate-questions.test.ts`: CCAR-P's 63 questions parse
+- [x] T033 [P] [US2] Extend `web/tests/unit/generate-questions.test.ts`: CCAR-P's 63 questions parse
       correctly (44 multiple_choice, 14 multiple_response, 5 scenario_matching; 7 domains; weights
       summing to 100.0), and scenario_matching rows retain their positional, duplicate-containing
       `correctAnswers` rather than being deduplicated or rejected
-- [ ] T034 [P] [US2] Component test `web/tests/component/ScenarioMatchingList.test.tsx`: sub-scenario
+- [x] T034 [P] [US2] Component test `web/tests/component/ScenarioMatchingList.test.tsx`: sub-scenario
       count stated before answering (FR-011), each row classified independently, reusing a choice
       across rows is accepted without an error, keyboard operable
-- [ ] T035 [P] [US2] Extend `web/tests/component/AnswerFeedback.test.tsx`: `scenario_matching`
+- [x] T035 [P] [US2] Extend `web/tests/component/AnswerFeedback.test.tsx`: `scenario_matching`
       branch shows each sub-scenario's own correctness individually, not one aggregate verdict
       (FR-013)
-- [ ] T036 [P] [US2] Extend `web/tests/component/SessionReview.test.tsx`: `scenario_matching` entries
+- [x] T036 [P] [US2] Extend `web/tests/component/SessionReview.test.tsx`: `scenario_matching` entries
       show, per sub-scenario, the candidate's classification, the correct classification, and whether
       it was correct (FR-014)
-- [ ] T037 [P] [US2] End-to-end test `web/tests/e2e/ccar-p-scenario-matching.spec.ts` covering
+- [x] T037 [P] [US2] End-to-end test `web/tests/e2e/ccar-p-scenario-matching.spec.ts` covering
       quickstart V8–V11: sub-scenario count stated up front, incomplete submission refused with a
       count, grading with one wrong sub-scenario disclosed per-sub-scenario at the mode's normal
       timing, and the same detail present in post-session review
 
 ### Implementation for User Story 2
 
-- [ ] T038 [US2] Extend `web/src/domain/types.ts`: `QuestionFormat` gains `'scenario_matching'`
-- [ ] T039 [US2] Extend `web/src/content/schema.ts`: `format` enum gains `'scenario_matching'`; the
+- [x] T038 [US2] Extend `web/src/domain/types.ts`: `QuestionFormat` gains `'scenario_matching'`
+- [x] T039 [US2] Extend `web/src/content/schema.ts`: `format` enum gains `'scenario_matching'`; the
       `correctAnswers`-uniqueness `superRefine` check is skipped for this format only; add a
       `selectCount >= 2` rule for this format, per data-model.md's validation-rules section
-- [ ] T040 [US2] Extend `web/scripts/generate-questions.ts`: add the CCAR-P entry to `SEED_SOURCES`;
+- [x] T040 [US2] Extend `web/scripts/generate-questions.ts`: add the CCAR-P entry to `SEED_SOURCES`;
       add `scenario_matching` to the row pattern's format alternation
-- [ ] T041 [US2] Run `npm run generate:questions` and commit the regenerated four-exam bundle
-- [ ] T042 [US2] Extend `web/src/domain/grading.ts`: `grade()` dispatches on `question.format`
+- [x] T041 [US2] Run `npm run generate:questions` and commit the regenerated four-exam bundle
+- [x] T042 [US2] Extend `web/src/domain/grading.ts`: `grade()` dispatches on `question.format`
       (positional comparison for `scenario_matching`, unchanged set comparison otherwise); add
       `gradeSubScenarios(question, selected): boolean[]`
-- [ ] T043 [P] [US2] Implement `web/src/components/quiz/ScenarioMatchingList.tsx` — one single-select
+- [x] T043 [P] [US2] Implement `web/src/components/quiz/ScenarioMatchingList.tsx` — one single-select
       row per sub-scenario, all rows sharing the question's one option set
-- [ ] T044 [US2] Extend `web/src/components/quiz/QuestionCard.tsx`: branch to
+- [x] T044 [US2] Extend `web/src/components/quiz/QuestionCard.tsx`: branch to
       `ScenarioMatchingList` when `question.format === 'scenario_matching'`, `OptionList` otherwise
       (depends on T043)
-- [ ] T045 [US2] Extend `web/src/components/quiz/AnswerFeedback.tsx`: `scenario_matching` branch
+- [x] T045 [US2] Extend `web/src/components/quiz/AnswerFeedback.tsx`: `scenario_matching` branch
       rendering `gradeSubScenarios`' per-row result (depends on T042)
-- [ ] T046 [US2] Extend `web/src/components/results/SessionReview.tsx`: `scenario_matching` branch
+- [x] T046 [US2] Extend `web/src/components/results/SessionReview.tsx`: `scenario_matching` branch
       rendering per-sub-scenario candidate/correct/outcome rows (depends on T042)
 
 **Checkpoint**: CCAR-P playable end-to-end with correct per-sub-scenario grading, disclosure and

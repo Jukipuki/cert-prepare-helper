@@ -59,13 +59,18 @@ export function SessionReview({ set, session }: { set: QuestionSet; session: Ses
               Question {question.questionNumber} · {question.domainName}
             </p>
             <p className="font-medium text-fg">{question.questionText}</p>
-            <p className="text-sm text-muted">
-              Your answer:{' '}
-              {selected.length > 0
-                ? selected.map((key) => `${key}. ${question.options[key]}`).join('; ')
-                : 'No answer selected'}
-            </p>
-            <AnswerFeedback question={question} status={status} />
+            {/* scenario_matching's per-sub-scenario breakdown in AnswerFeedback already shows each
+                classification made — a flat "Your answer: A; B; C" line would be redundant and
+                harder to read without the sub-scenario index attached. */}
+            {question.format !== 'scenario_matching' && (
+              <p className="text-sm text-muted">
+                Your answer:{' '}
+                {selected.length > 0
+                  ? selected.map((key) => `${key}. ${question.options[key]}`).join('; ')
+                  : 'No answer selected'}
+              </p>
+            )}
+            <AnswerFeedback question={question} status={status} selected={selected} />
           </li>
         ))}
       </ul>

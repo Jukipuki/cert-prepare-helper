@@ -51,6 +51,45 @@ function buildSubmittedSession() {
   return sessionReducer(session, { type: 'SUBMIT_EXAM', set, now: 100 });
 }
 
+describe('SessionReview — scenario_matching (FR-014)', () => {
+  const scenarioQuestion = makeQuestion({
+    questionNumber: '1.11',
+    format: 'scenario_matching',
+    selectCount: 3,
+    questionText: 'Classify each scenario.',
+    options: { A: 'single call', B: 'fixed workflow', C: 'autonomous agent' },
+    correctAnswers: ['A', 'B', 'A'],
+  });
+  const scenarioSet: QuestionSet = { examCode: 'CCAR-P', questions: [scenarioQuestion] };
+
+  function buildScenarioSession(selected: (string | undefined)[]) {
+    let session = sessionReducer(createInitialSession(), {
+      type: 'CHOOSE_MODE',
+      mode: 'exam',
+      set: scenarioSet,
+      now: 0,
+    });
+    session = sessionReducer(session, {
+      type: 'SELECT',
+      question: scenarioQuestion,
+      selected: selected as never,
+    });
+    return sessionReducer(session, { type: 'SUBMIT_EXAM', set: scenarioSet, now: 100 });
+  }
+
+  it("shows, for every sub-scenario, the candidate's classification, the correct classification, and whether it was correct", () => {
+    // Sub-scenario 3 wrong: candidate chose B, recorded correct answer is A.
+    render(<SessionReview set={scenarioSet} session={buildScenarioSession(['A', 'B', 'B'])} />);
+
+    expect(screen.getByText(/scenario 1.*correct/is)).toBeInTheDocument();
+    expect(screen.getByText(/scenario 2.*correct/is)).toBeInTheDocument();
+    const scenario3 = screen.getByText(/scenario 3/i).closest('li');
+    expect(scenario3).toHaveTextContent(/incorrect/i);
+    expect(scenario3).toHaveTextContent(/your answer b\./i);
+    expect(scenario3).toHaveTextContent(/correct answer a\./i);
+  });
+});
+
 describe('SessionReview', () => {
   it('shows every question by default', () => {
     render(<SessionReview set={set} session={buildSubmittedSession()} />);

@@ -30,7 +30,7 @@ function findExam(examCode: string): ExamSummary {
 
 describe('buildCatalog against the real generated content', () => {
   it('produces one summary per configured exam, in list order', () => {
-    expect(catalog.map((e) => e.examCode)).toEqual(['CCDV-F', 'CCAR-F', 'CCAR-Fv2']);
+    expect(catalog.map((e) => e.examCode)).toEqual(['CCDV-F', 'CCAR-F', 'CCAR-Fv2', 'CCAR-P']);
   });
 
   it('CCDV-F: name, total, and full per-domain breakdown', () => {
@@ -113,6 +113,51 @@ describe('buildCatalog against the real generated content', () => {
     expect(exam.totalQuestions).toBe(60);
     expect(exam.domains.map((d) => d.questionCount)).toEqual([16, 11, 12, 12, 9]);
     expect(exam.domains.map((d) => d.domainWeight)).toEqual([27, 18, 20, 20, 15]);
+  });
+
+  it('CCAR-P: name, total, and full per-domain breakdown', () => {
+    const exam = findExam('CCAR-P');
+    expect(exam.examName).toBe('CCAR-P');
+    expect(exam.totalQuestions).toBe(63);
+    expect(exam.domains).toEqual([
+      {
+        domainNumber: 1,
+        domainName: 'Solution Design & Architecture',
+        domainWeight: 17,
+        questionCount: 11,
+      },
+      {
+        domainNumber: 2,
+        domainName: 'Claude Models, Prompting & Context Engineering',
+        domainWeight: 13,
+        questionCount: 8,
+      },
+      { domainNumber: 3, domainName: 'Integration', domainWeight: 19, questionCount: 12 },
+      {
+        domainNumber: 4,
+        domainName: 'Evaluation, Testing & Optimization',
+        domainWeight: 16,
+        questionCount: 10,
+      },
+      {
+        domainNumber: 5,
+        domainName: 'Governance, Safety & Risk Management',
+        domainWeight: 14,
+        questionCount: 9,
+      },
+      {
+        domainNumber: 6,
+        domainName: 'Stakeholder Communication & Lifecycle Management',
+        domainWeight: 14,
+        questionCount: 9,
+      },
+      {
+        domainNumber: 7,
+        domainName: 'Developer Productivity & Operational Enablement',
+        domainWeight: 7,
+        questionCount: 4,
+      },
+    ]);
   });
 
   it('every exam domain weight sums to 100.0', () => {

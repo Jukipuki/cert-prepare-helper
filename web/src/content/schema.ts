@@ -8,7 +8,7 @@ export const questionSchema = z
     domainNumber: z.number().int().min(1),
     domainName: z.string().min(1),
     domainWeight: z.number().gt(0).max(100),
-    format: z.enum(['multiple_choice', 'multiple_response']),
+    format: z.enum(['multiple_choice', 'multiple_response', 'scenario_matching']),
     selectCount: z.number().int().min(1),
     questionText: z.string().trim().min(1),
     options: z
@@ -21,13 +21,18 @@ export const questionSchema = z
   })
   .strict()
   .superRefine((question, ctx) => {
-    const uniqueAnswers = new Set(question.correctAnswers);
-    if (uniqueAnswers.size !== question.correctAnswers.length) {
-      ctx.addIssue({
-        code: 'custom',
-        message: `${question.questionNumber}: correctAnswers must be unique`,
-        path: ['correctAnswers'],
-      });
+    // scenario_matching's correctAnswers is positional (index i = sub-scenario i's classification),
+    // so a repeated letter is expected whenever the same choice legitimately applies to more than
+    // one sub-scenario — not a validation error, unlike the unordered-set formats.
+    if (question.format !== 'scenario_matching') {
+      const uniqueAnswers = new Set(question.correctAnswers);
+      if (uniqueAnswers.size !== question.correctAnswers.length) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `${question.questionNumber}: correctAnswers must be unique`,
+          path: ['correctAnswers'],
+        });
+      }
     }
 
     for (const key of question.correctAnswers) {
@@ -60,6 +65,14 @@ export const questionSchema = z
       ctx.addIssue({
         code: 'custom',
         message: `${question.questionNumber}: multiple_response questions must have selectCount >= 2`,
+        path: ['selectCount'],
+      });
+    }
+
+    if (question.format === 'scenario_matching' && question.selectCount < 2) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `${question.questionNumber}: scenario_matching questions must have selectCount >= 2`,
         path: ['selectCount'],
       });
     }
