@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Jukipuki/cert-prepare-helper/specs/002-multi-exam-support/contracts/questions.schema.json",
+  "title": "Generated multi-exam question set",
+  "description": "Shape of web/src/content/questions.generated.json, produced from the known list of seed migrations (sql/002-sql/004 in Story 1; sql/005 added in Story 2). Mirrored by the Zod schema in web/src/content/schema.ts, which both the generator and the loader use. Supersedes specs/001-static-quiz's single-exam version of this schema.",
+  "type": "object",
+  "required": ["_generated", "exams"],
+  "additionalProperties": false,
+  "properties": {
+    "_generated": {
+      "type": "object",
+      "description": "Provenance banner. Its presence is what marks this file as machine-produced.",
+      "required": ["source", "command", "warning"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Describes the configured seed-file list, not a single path, since this file is now produced from several seed migrations.",
+          "examples": [
+            "sql/002_seed_ccdv_f_questions.sql, sql/003_seed_ccar_f_questions.sql, sql/004_seed_ccar_fv2_questions.sql"
+          ]
+        },
+        "command": { "const": "npm run generate:questions" },
+        "warning": {
+          "const": "GENERATED FILE — DO NOT EDIT. Edit the source seed migration(s) and regenerate."
+        }
+      }
+    },
+    "exams": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/examEntry" },
+      "description": "One entry per configured exam, in the generator's source-list order (research.md R2). Adding an exam appends here; it never reorders existing entries."
+    }
+  },
+  "$defs": {
+    "examEntry": {
+      "type": "object",
+      "required": ["examCode", "examName", "questions"],
+      "additionalProperties": false,
+      "properties": {
+        "examCode": { "type": "string", "minLength": 1, "examples": ["CCDV-F", "CCAR-F", "CCAR-Fv2", "CCAR-P"] },
+        "examName": { "type": "string", "minLength": 1, "description": "Display name, from the generator's known source list — not derived from question content." },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/question" }
+        }
+      }
+    },
+    "optionKey": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D", "E"]
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "questionNumber",
+        "domainNumber",
+        "domainName",
+        "domainWeight",
+        "format",
+        "selectCount",
+        "questionText",
+        "options",
+        "correctAnswers",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "questionNumber": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Source numbering, unique WITHIN this exam's `questions` array only — the same number may recur in a different exam entry (FR-008). Used for display and traceability, never for navigation.",
+          "examples": ["1.1", "2.14"]
+        },
+        "domainNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Scoped per exam. Not bounded to 8 as in the single-exam (001) version of this schema — CCAR-F/Fv2 have 5 domains, CCAR-P has 7, CCDV-F has 8."
+        },
+        "domainName": { "type": "string", "minLength": 1 },
+        "domainWeight": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 },
+        "format": {
+          "type": "string",
+          "enum": ["multiple_choice", "multiple_response", "scenario_matching"],
+          "description": "scenario_matching is a Story 2 value (CCAR-P only). No Story 1 generator run produces it."
+        },
+        "selectCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "For scenario_matching: the number of sub-scenarios requiring classification (FR-011)."
+        },
+        "questionText": {
+          "type": "string",
+          "minLength": 1,
+          "description": "For scenario_matching, embeds the numbered sub-scenario list as part of the prose (matches the seed's row-level representation, per sql/001's v2 header comment)."
+        },
+        "options": {
+          "type": "object",
+          "minProperties": 2,
+          "propertyNames": { "$ref": "#/$defs/optionKey" },
+          "additionalProperties": { "type": "string", "minLength": 1 },
+          "description": "For scenario_matching, this is the one shared classification-choice set applied to every sub-scenario."
+        },
+        "correctAnswers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/optionKey" },
+          "description": "multiple_choice/multiple_response: an unordered set, stored sorted, uniqueItems enforced (see allOf below). scenario_matching: POSITIONAL — index i is the correct classification for sub-scenario i — and NOT unique-constrained; the real CCAR-P data legitimately repeats a letter in every one of its five scenario_matching questions (research.md R4)."
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "format": { "const": "multiple_choice" } } },
+          "then": {
+            "properties": {
+              "selectCount": { "const": 1 },
+              "correctAnswers": { "uniqueItems": true }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "format": { "const": "multiple_response" } } },
+          "then": {
+            "properties": {
+              "selectCount": { "minimum": 2 },
+              "correctAnswers": { "uniqueItems": true }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "format": { "const": "scenario_matching" } } },
+          "then": {
+            "properties": {
+              "selectCount": { "minimum": 2 }
+            },
+            "$comment": "Deliberately no uniqueItems constraint here — duplicates are valid for this format."
+          }
+        }
+      ]
+    }
+  },
+  "$comment": "Invariants not expressible in JSON Schema, enforced by the generator instead, failing the build on violation: (1) selectCount === correctAnswers.length for every format; (2) every key in correctAnswers exists in that question's options; (3) questionNumber is unique within its own examEntry.questions, checked per exam, not globally; (4) examCode is unique across the exams array; (5) generation is all-or-nothing across every configured exam (FR-007) — a single invalid row anywhere fails the whole run and writes no file."
+}

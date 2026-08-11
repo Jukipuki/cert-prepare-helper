@@ -20,6 +20,20 @@ export interface QuestionSet {
   questions: Question[];
 }
 
+export interface ExamDomainSummary {
+  domainNumber: number;
+  domainName: string;
+  domainWeight: number;
+  questionCount: number;
+}
+
+export interface ExamSummary {
+  examCode: string;
+  examName: string;
+  totalQuestions: number;
+  domains: ExamDomainSummary[];
+}
+
 export type Mode = 'zen' | 'exam';
 
 export type SessionStatus = 'choosing' | 'inProgress' | 'submitted' | 'expired';

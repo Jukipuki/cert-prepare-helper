@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { grade, isComplete } from '@/domain/grading';
 import type { Question } from '@/domain/types';
-import { generate } from '../../scripts/generate-questions';
+import { generate, SEED_SOURCES } from '../../scripts/generate-questions';
 
 function makeQuestion(overrides: Partial<Question>): Question {
   return {
@@ -82,19 +82,23 @@ describe('isComplete', () => {
   });
 });
 
-describe('grading sweep over all 53 generated questions', () => {
-  const seedPath = path.resolve(__dirname, '../../../sql/002_seed_ccdv_f_questions.sql');
-  const seedSql = readFileSync(seedPath, 'utf8');
-  const { data } = generate(seedSql) as { data: { questions: Question[] } };
+describe('grading sweep over all 173 generated questions across every configured exam', () => {
+  const seedDir = path.resolve(__dirname, '../../../sql');
+  const loadedSources = SEED_SOURCES.map((source) => ({
+    ...source,
+    sql: readFileSync(path.join(seedDir, source.seedFile), 'utf8'),
+  }));
+  const { data } = generate(loadedSources) as { data: { exams: { questions: Question[] }[] } };
+  const allQuestions = data.exams.flatMap((exam) => exam.questions);
 
   it('grades the recorded correct answer as correct for every question', () => {
-    for (const q of data.questions) {
+    for (const q of allQuestions) {
       expect(grade(q, q.correctAnswers), `question ${q.questionNumber}`).toBe(true);
     }
   });
 
   it('grades an empty selection as incorrect for every question', () => {
-    for (const q of data.questions) {
+    for (const q of allQuestions) {
       expect(grade(q, []), `question ${q.questionNumber}`).toBe(false);
     }
   });

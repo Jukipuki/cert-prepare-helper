@@ -5,7 +5,7 @@ export const optionKeySchema = z.enum(['A', 'B', 'C', 'D', 'E']);
 export const questionSchema = z
   .object({
     questionNumber: z.string().regex(/^[0-9]+\.[0-9]+$/, 'questionNumber must look like "1.1"'),
-    domainNumber: z.number().int().min(1).max(8),
+    domainNumber: z.number().int().min(1),
     domainName: z.string().min(1),
     domainWeight: z.number().gt(0).max(100),
     format: z.enum(['multiple_choice', 'multiple_response']),
@@ -66,27 +66,27 @@ export const questionSchema = z
   });
 
 export const generatedBannerSchema = z.object({
-  source: z.literal('sql/002_seed_ccdv_f_questions.sql'),
+  source: z.string().min(1),
   command: z.literal('npm run generate:questions'),
   warning: z.literal(
-    'GENERATED FILE — DO NOT EDIT. Edit the source seed migration and regenerate.',
+    'GENERATED FILE — DO NOT EDIT. Edit the source seed migration(s) and regenerate.',
   ),
 });
 
-export const questionSetFileSchema = z
+export const examEntrySchema = z
   .object({
-    _generated: generatedBannerSchema,
     examCode: z.string().min(1),
+    examName: z.string().min(1),
     questions: z.array(questionSchema).min(1),
   })
   .strict()
-  .superRefine((file, ctx) => {
+  .superRefine((entry, ctx) => {
     const seen = new Set<string>();
-    for (const question of file.questions) {
+    for (const question of entry.questions) {
       if (seen.has(question.questionNumber)) {
         ctx.addIssue({
           code: 'custom',
-          message: `Duplicate questionNumber: ${question.questionNumber}`,
+          message: `${entry.examCode}: duplicate questionNumber: ${question.questionNumber}`,
           path: ['questions'],
         });
       }
@@ -94,4 +94,25 @@ export const questionSetFileSchema = z
     }
   });
 
+export const questionSetFileSchema = z
+  .object({
+    _generated: generatedBannerSchema,
+    exams: z.array(examEntrySchema).min(1),
+  })
+  .strict()
+  .superRefine((file, ctx) => {
+    const seen = new Set<string>();
+    for (const exam of file.exams) {
+      if (seen.has(exam.examCode)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `Duplicate examCode: ${exam.examCode}`,
+          path: ['exams'],
+        });
+      }
+      seen.add(exam.examCode);
+    }
+  });
+
 export type QuestionSetFile = z.infer<typeof questionSetFileSchema>;
+export type ExamEntry = z.infer<typeof examEntrySchema>;

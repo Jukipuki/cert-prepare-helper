@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CCDV-F Practice Quiz',
+  title: 'Cert Prep Practice Quiz',
   description:
-    'A private, offline practice quiz for the CCDV-F exam. Nothing is stored or sent anywhere.',
+    'A private, offline practice quiz covering multiple certification exams. Nothing is stored or sent anywhere.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

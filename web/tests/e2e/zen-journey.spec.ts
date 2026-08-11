@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('zen mode journey', () => {
   test('V2 — answer, grade, lock, and refuse invalid submissions', async ({ page }) => {
-    await page.goto('/quiz?mode=zen');
+    await page.goto('/quiz?exam=CCDV-F&mode=zen');
 
     // No countdown appears anywhere in zen mode.
     await expect(page.getByText(/\d{1,3}:\d{2}/)).toHaveCount(0);
@@ -29,7 +29,7 @@ test.describe('zen mode journey', () => {
   });
 
   test('V3 — stepping back preserves the graded state and score', async ({ page }) => {
-    await page.goto('/quiz?mode=zen');
+    await page.goto('/quiz?exam=CCDV-F&mode=zen');
 
     await page.getByRole('radio').first().check();
     await page.getByRole('button', { name: /submit answer/i }).click();

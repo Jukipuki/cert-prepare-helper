@@ -30,7 +30,7 @@ test.describe('offline and privacy — V11', () => {
       requests.push({ url: req.url(), postData: req.postData() });
     });
 
-    await page.goto('/quiz?mode=zen');
+    await page.goto('/quiz?exam=CCDV-F&mode=zen');
     await page.locator('input[type="radio"], input[type="checkbox"]').first().waitFor();
 
     // Disconnect the network and complete the entire session with nothing reachable.

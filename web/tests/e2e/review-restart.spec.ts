@@ -24,7 +24,7 @@ test.describe('review and restart — V9', () => {
   test('reviews a completed zen session, filters to missed questions, and restarts into exam mode', async ({
     page,
   }) => {
-    await page.goto('/quiz?mode=zen');
+    await page.goto('/quiz?exam=CCDV-F&mode=zen');
 
     // Complete the whole session — grading the final question submits it automatically.
     let guard = 0;
@@ -56,9 +56,9 @@ test.describe('review and restart — V9', () => {
       'true',
     );
 
-    // Start over returns to the mode choice with a clean slate.
+    // Start over returns to the same exam's mode choice with a clean slate (not the exam list).
     await page.getByRole('button', { name: /^start over$/i }).click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/exam/CCDV-F');
     await expect(page.getByRole('link', { name: /exam mode/i })).toBeVisible();
 
     // A fresh exam session gets a full 120 minutes.

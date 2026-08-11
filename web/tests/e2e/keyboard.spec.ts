@@ -50,7 +50,7 @@ test.describe('keyboard-only completion — SC-011', () => {
   test('completes an entire zen session using only the keyboard, with focus visible throughout', async ({
     page,
   }) => {
-    await page.goto('/quiz?mode=zen');
+    await page.goto('/quiz?exam=CCDV-F&mode=zen');
     await page.locator('input[type="radio"], input[type="checkbox"]').first().waitFor();
 
     let guard = 0;
@@ -96,7 +96,7 @@ test.describe('keyboard-only completion — SC-011', () => {
   test('completes an exam session using only the keyboard, with focus visible throughout', async ({
     page,
   }) => {
-    await page.goto('/quiz?mode=exam');
+    await page.goto('/quiz?exam=CCDV-F&mode=exam');
     await page.locator('input[type="radio"], input[type="checkbox"]').first().waitFor();
 
     // Answer a couple of questions, advancing via the keyboard-reachable Next button.

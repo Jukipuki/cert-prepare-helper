@@ -14,6 +14,7 @@ import { ScoreSummary } from '@/components/results/ScoreSummary';
 import { DomainBreakdown } from '@/components/results/DomainBreakdown';
 import { SessionReview } from '@/components/results/SessionReview';
 import { StartOverControl } from '@/components/quiz/StartOverControl';
+import { ChangeExamControl } from '@/components/quiz/ChangeExamControl';
 
 export function ExamSession({ set }: { set: QuestionSet }) {
   const [session, dispatch] = useSession('exam', set);
@@ -58,7 +59,10 @@ export function ExamSession({ set }: { set: QuestionSet }) {
           <h1 className="text-2xl font-semibold text-fg">
             {session.status === 'expired' ? 'Time expired — exam submitted' : 'Exam submitted'}
           </h1>
-          <StartOverControl inProgress={false} />
+          <div className="flex items-center gap-4">
+            <StartOverControl inProgress={false} examCode={set.examCode} />
+            <ChangeExamControl inProgress={false} />
+          </div>
         </div>
         <ScoreSummary result={result} />
         <DomainBreakdown byDomain={result.byDomain} />
@@ -89,7 +93,8 @@ export function ExamSession({ set }: { set: QuestionSet }) {
           Question {session.currentIndex + 1} of {session.order.length}
         </p>
         <div className="flex items-center gap-4">
-          <StartOverControl inProgress={inProgress} />
+          <StartOverControl inProgress={inProgress} examCode={set.examCode} />
+          <ChangeExamControl inProgress={inProgress} />
           <CountdownTimer deadline={deadline} />
         </div>
       </div>

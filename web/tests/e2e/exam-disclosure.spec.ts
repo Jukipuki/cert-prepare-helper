@@ -4,7 +4,7 @@ test.describe('exam disclosure discipline', () => {
   test('V5 — no correctness signal, correct answer, or rationale before submission', async ({
     page,
   }) => {
-    await page.goto('/quiz?mode=exam');
+    await page.goto('/quiz?exam=CCDV-F&mode=exam');
 
     // Answer a few questions, navigate freely, and revisit an earlier one.
     await page.getByRole('radio').first().check();

@@ -11,6 +11,7 @@ import { ScoreSummary } from '@/components/results/ScoreSummary';
 import { DomainBreakdown } from '@/components/results/DomainBreakdown';
 import { SessionReview } from '@/components/results/SessionReview';
 import { StartOverControl } from '@/components/quiz/StartOverControl';
+import { ChangeExamControl } from '@/components/quiz/ChangeExamControl';
 
 export function ZenSession({ set }: { set: QuestionSet }) {
   const [session, dispatch] = useSession('zen', set);
@@ -22,7 +23,10 @@ export function ZenSession({ set }: { set: QuestionSet }) {
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-fg">Session complete</h1>
-          <StartOverControl inProgress={false} />
+          <div className="flex items-center gap-4">
+            <StartOverControl inProgress={false} examCode={set.examCode} />
+            <ChangeExamControl inProgress={false} />
+          </div>
         </div>
         <ScoreSummary result={result} />
         <DomainBreakdown byDomain={result.byDomain} />
@@ -57,8 +61,9 @@ export function ZenSession({ set }: { set: QuestionSet }) {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex justify-end">
-        <StartOverControl inProgress={session.status === 'inProgress'} />
+      <div className="flex justify-end gap-4">
+        <StartOverControl inProgress={session.status === 'inProgress'} examCode={set.examCode} />
+        <ChangeExamControl inProgress={session.status === 'inProgress'} />
       </div>
       <ProgressIndicator
         position={session.currentIndex + 1}

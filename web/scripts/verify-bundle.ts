@@ -14,6 +14,9 @@ const BUDGET_BYTES = 200 * 1024; // 200 KB gzipped, Constitution Principle IV
 const ROUTES: { label: string; htmlPath: string }[] = [
   { label: '/', htmlPath: path.join(NEXT_DIR, 'server/app/index.html') },
   { label: '/quiz', htmlPath: path.join(NEXT_DIR, 'server/app/quiz.html') },
+  // /exam/[examCode] is prerendered per configured exam (generateStaticParams) — CCDV-F stands in
+  // for the route's initial JS, which does not vary by exam code.
+  { label: '/exam/CCDV-F', htmlPath: path.join(NEXT_DIR, 'server/app/exam/CCDV-F.html') },
 ];
 
 function extractScriptPaths(html: string): string[] {

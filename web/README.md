@@ -1,10 +1,12 @@
-# CCDV-F Practice Quiz
+# Cert Prep Practice Quiz
 
-A client-side practice quiz over the 53-question CCDV-F set, offering an untimed **zen** mode
-(explanation shown immediately after each question) and a 120-minute timed **exam** mode
-(disclosure deferred to submission). Nothing is stored and nothing is transmitted: no account, no
-`localStorage`, no cookies, no server state. See `specs/001-static-quiz/` at the repository root for
-the full spec, plan and task breakdown.
+A client-side practice quiz covering multiple certification exams (CCDV-F, CCAR-F, CCAR-Fv2 today;
+CCAR-P once its scenario-matching format ships), offering an untimed **zen** mode (explanation shown
+immediately after each question) and a 120-minute timed **exam** mode (disclosure deferred to
+submission). A candidate first chooses an exam, then a mode. Nothing is stored and nothing is
+transmitted: no account, no `localStorage`, no cookies, no server state. See `specs/001-static-quiz/`
+and `specs/002-multi-exam-support/` at the repository root for the full spec, plan and task
+breakdown.
 
 ## Local setup
 
@@ -14,21 +16,25 @@ you for a secret, something has gone wrong.
 ```bash
 cd web
 npm install
-npm run generate:questions   # sql/002_seed_ccdv_f_questions.sql -> src/content/questions.generated.json
+npm run generate:questions   # sql/002-sql/004 -> src/content/questions.generated.json
 npm run dev                  # http://localhost:3000
 ```
 
 `generate:questions` also runs automatically as a `predev`/`prebuild` step, so the explicit call is
-only needed right after editing the seed migration.
+only needed right after editing a seed migration.
 
 ## Content is generated, never hand-edited
 
-`src/content/questions.generated.json` is produced by `scripts/generate-questions.ts` from
-`../sql/002_seed_ccdv_f_questions.sql`, the canonical source of truth (Constitution v1.1.0,
-Principle I). If a question is wrong, fix the seed migration and regenerate — editing the generated
-JSON directly is a constitution violation and will be overwritten on the next generation anyway.
-`npm run verify:questions` regenerates into a temp path and fails the build if the committed file has
-drifted from the seed.
+`src/content/questions.generated.json` is produced by `scripts/generate-questions.ts` from the
+canonical seed migrations in `../sql/` (Constitution v1.1.0, Principle I) — one bundle covering every
+configured exam. The generator reads an explicit, ordered `SEED_SOURCES` list of
+`{ seedFile, examCode, examName }` entries; adding a future exam means adding one entry to that list
+and regenerating, not changing how any existing exam's content is produced (FR-009). If a question is
+wrong, fix its exam's seed migration and regenerate — editing the generated JSON directly is a
+constitution violation and will be overwritten on the next generation anyway. Generation is
+all-or-nothing: an invalid row in any one configured exam fails the whole run rather than shipping a
+bundle missing or partially populated for that exam. `npm run verify:questions` regenerates into a
+temp path and fails the build if the committed file has drifted from the seed.
 
 ## Scripts
 
@@ -77,3 +83,8 @@ element is the first question's text, which only renders after the client-side c
 than bundled, to keep the entry bundle small and the `QuestionSource` boundary real). These are lab
 measurements from a single local machine; confirming real p75 numbers requires production traffic
 (e.g. Vercel Analytics) once deployed.
+
+Measured before multi-exam support (specs/002-multi-exam-support): the generated content bundle is
+larger now that it holds several exams, but it is still fetched via the same dynamic `import()`, kept
+out of `/`'s and `/quiz`'s initial JS exactly as before (see that feature's research.md R3) — these
+numbers have not been re-measured against the larger bundle.

@@ -7,7 +7,7 @@ test.describe('exam timer', () => {
     page,
   }) => {
     await page.clock.install({ time: new Date('2026-01-01T09:00:00Z') });
-    await page.goto('/quiz?mode=exam');
+    await page.goto('/quiz?exam=CCDV-F&mode=exam');
 
     // Countdown starts at 120:00 and is visible.
     await expect(page.getByRole('timer')).toContainText('120:00');
@@ -30,7 +30,7 @@ test.describe('exam timer', () => {
     page,
   }) => {
     await page.clock.install({ time: new Date('2026-01-01T09:00:00Z') });
-    await page.goto('/quiz?mode=exam');
+    await page.goto('/quiz?exam=CCDV-F&mode=exam');
     await expect(page.getByRole('timer')).toContainText('120:00');
 
     // Simulate the tab being backgrounded/throttled for well over an hour in one jump.

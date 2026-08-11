@@ -78,6 +78,19 @@ question_number) DO UPDATE SET ...` covering every question in the PDF.
 - `rationale`: include the explanation for the correct answer. If the
   source also explains why each wrong option is wrong, fold that in
   concisely rather than omitting it.
+- **File header:** above the `INSERT` statement, add a comment block
+  attributing the source, in this exact style:
+
+  ```sql
+  -- <EXAM_CODE> practice question seed (<author>'s <N>-question set, per Exam Guide v1.0 blueprint weights)
+  --
+  -- Question set author: <author>. Originally published at:
+  -- <source URL>
+  -- The questions, options and rationales below are his/her/their work, reproduced here for practice use.
+  ```
+
+  Ask me for the source URL (e.g. a LinkedIn post link) if it isn't stated
+  in the document itself — don't guess or omit it silently.
 - End the statement with:
 
 ```sql
@@ -118,6 +131,10 @@ on conflict (exam_code, question_number) do update set
 - If any question's correct answer, option lettering, or select count is
   ambiguous or self-contradictory in the source, stop and ask me. Never pick
   the reading that looks most likely and move on.
+- If the certification name/code on the PDF differs from certifications I've
+  mentioned in past conversations (e.g. a different track or version), flag
+  that difference explicitly before proceeding — don't assume it's the same
+  exam I've been prepping for elsewhere.
 
 **Output:** create the result as a downloadable `.sql` file, confirm the
 number of question rows in the file matches what you found in the PDF, and
