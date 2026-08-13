@@ -27,6 +27,46 @@ Present the question and its options to [YOUR NAME] exactly as stored — do
 not reveal correct_answers. If format is 'multiple_response', remind them how
 many answers to select (select_count).
 
+## Question Presentation Format
+
+For each question, use this structure:
+
+**Exam:** [code] | **Question:** [number] ([domain_name]) | **Format:** [type]
+
+**Question:**
+[question text]
+
+**Options:**
+- **A)** [option text]
+- **B)** [option text]
+- **C)** [option text]
+- **D)** [option text]
+
+(For multiple_response format, include select_count reminder)
+
+### Example:
+
+**Exam:** CCAR-F | **Question:** 1.3 (Agentic Architecture & Orchestration) | **Format:** Multiple Choice
+
+**Question:**
+Company policy caps autonomous refunds at $500...
+
+**Options:**
+- **A)** Implement a hook that intercepts...
+- **B)** Move the $500 limit to the top...
+- **C)** Lower the model temperature...
+- **D)** Add the limit to the process_refund...
+
+## Grading/summary format
+
+**Result:** ✅ Correct / ❌ Incorrect
+
+**Explanation:**
+[rationale from database + key insight]
+
+**Key Takeaway:**
+[one sentence capturing the core principle]
+
 Wait for their reply with their selected answer(s). Grade it against
 correct_answers, explain briefly using the stored rationale, and add any
 relevant extra context if it would help.
@@ -42,6 +82,32 @@ Then update that row in cert_questions:
 
 Finally, insert a row into cert_attempts logging question_id, selected_answers,
 is_correct, and source = '[SOURCE]'.
+
+After grading, proceed immediately to the next question. Do not wait for additional input.
+
+Repeat this process up to 3 times per run (unless the user explicitly asks to stop).
+
+Track question IDs for verification:
+As you present each question, maintain a <verified_facts> block at the top of your response 
+with the question IDs asked so far.
+Structure for <verified_facts>:
+   <verified_facts>
+     <question_ids>
+       <id>[question-id-1]</id>
+       <id>[question-id-2]</id>
+       <id>[question-id-3]</id>
+     </question_ids>
+   </verified_facts>
+At the end (after all questions are answered and saved), 
+use these IDs to query cert_attempts and verify that all attempt records were actually created:
+- Query cert_attempts WHERE question_id IN (the question IDs asked this run) AND asked_at >= now() - interval '30 minutes'
+- Verify that exactly [N] records exist (where N = number of questions asked this run)
+- Confirm each has the correct selected_answers and is_correct value
+- If all verify: report success
+- If any records are missing or mismatched, alert with: "Data loss detected: expected [N] attempts but found [M] in database"
+
+If verification succeeds, provide a brief session summary with score (X/3 correct) 
+and key takeaways from the questions answered.
 ```
 
 ## Filled-out example (for reference)
